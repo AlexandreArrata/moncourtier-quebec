@@ -632,9 +632,11 @@ footer{border-top:1px solid var(--line);padding-block:32px;font-size:.92rem;colo
       var payload = await response.json();
       if (!response.ok) throw new Error(payload.erreur);
       if (payload.fiches) {
-        status.textContent = payload.fiches.length + ' fiche(s) dans le flux Centris.';
+        status.textContent = payload.fiches.length + ' fiche(s) · ' + payload.source + ' · ' + payload.couverture;
         var labels = {
-          statut: 'Statut', genre: 'Genre', prix_demande: 'Prix demandé', prix_initial: 'Prix initial',
+          statut: 'Statut', secteur: 'Secteur', adresse: 'Adresse', genre: 'Genre',
+          prix_affiche: 'Prix affiché dans Matrix', loyer_affiche: 'Loyer affiché dans Matrix',
+          terrain_imperial: 'Terrain (impérial)', terrain_metrique: 'Terrain (métrique)', prix_demande: 'Prix demandé', prix_initial: 'Prix initial',
           prix_conclu: 'Prix vendu', loyer_demande: 'Loyer demandé', loyer_conclu: 'Loyer conclu',
           date_transaction: 'Date de transaction', annee_construction: 'Année de construction',
           superficie_terrain: 'Superficie du terrain', unite_terrain: 'Unité du terrain',

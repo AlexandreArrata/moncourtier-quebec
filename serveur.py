@@ -91,7 +91,33 @@ def lookup_feed(database, address, postal, unit):
     return {"source": "Centris", "couverture": "Versions reçues par le flux", "fiches": matches}
 
 
-def handler_for(datasets, database=None):
+def lookup_matrix(database, address, sector):
+    key, area = normalize(address), normalize(sector)
+    if not key or not key[0].isdigit() or not area:
+        raise ValueError("Indiquez l’adresse complète et le secteur.")
+    matches = []
+    with sqlite3.connect(database) as connection:
+        rows = connection.execute("""
+            WITH current AS (
+                SELECT numero, MAX(observe_le) AS observe_le FROM versions GROUP BY numero
+            )
+            SELECT v.numero, v.observe_le, v.fiche FROM current c
+            JOIN versions v USING (numero, observe_le)
+        """)
+        for number, observed, payload in rows:
+            record = json.loads(payload)
+            if normalize(record["adresse"]) != key or normalize(record["secteur"]) != area:
+                continue
+            history = connection.execute(
+                "SELECT observe_le, fiche FROM versions WHERE numero=? ORDER BY observe_le",
+                (number,))
+            matches.append({"numero": number, "observe_le": observed, "fiche": record,
+                            "versions": [{"observe_le": t, "fiche": json.loads(p)} for t, p in history]})
+    return {"source": "Matrix Centris", "couverture": "Versions observées dans les lots importés",
+            "fiches": matches}
+
+
+def handler_for(datasets, database=None, matrix_database=None):
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, format_string, *args):
             # Ne pas journaliser les adresses recherchées.
@@ -124,7 +150,9 @@ def handler_for(datasets, database=None):
                 self.send_json(400, {"erreur": "L’adresse ou le secteur est trop long."})
                 return
             try:
-                if database is not None:
+                if matrix_database is not None:
+                    self.send_json(200, lookup_matrix(matrix_database, address, sector))
+                elif database is not None:
                     postal = params.get("code_postal", [""])[0]
                     unit = params.get("appartement", [""])[0]
                     self.send_json(200, lookup_feed(database, address, postal, unit))
@@ -138,16 +166,19 @@ def handler_for(datasets, database=None):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--actives", type=Path)
-    parser.add_argument("--base", type=Path)
+    sources = parser.add_mutually_exclusive_group()
+    sources.add_argument("--base", type=Path)
+    sources.add_argument("--matrix", type=Path)
     parser.add_argument("--historique", type=Path)
     parser.add_argument("--port", type=int, default=8765)
     options = parser.parse_args()
-    if not options.base and not (options.actives and options.historique):
-        parser.error("Indiquez --base ou les deux exports --actives et --historique.")
-    if options.base and not options.base.is_file():
+    database = options.base or options.matrix
+    if not database and not (options.actives and options.historique):
+        parser.error("Indiquez --base, --matrix ou les deux exports --actives et --historique.")
+    if database and not database.is_file():
         parser.error("Importez d’abord un lot dans la base.")
-    datasets = [] if options.base else [
+    datasets = [] if database else [
         load_dataset(options.actives, False), load_dataset(options.historique, True)]
-    with ThreadingHTTPServer(("127.0.0.1", options.port), handler_for(datasets, options.base)) as server:
+    with ThreadingHTTPServer(("127.0.0.1", options.port), handler_for(datasets, options.base, options.matrix)) as server:
         print(f"Ouvre http://127.0.0.1:{server.server_port}/", flush=True)
         server.serve_forever()
