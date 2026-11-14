@@ -225,6 +225,18 @@ footer{border-top:1px solid var(--line);padding-block:32px;font-size:.92rem;colo
 }
 .search-row { flex-wrap: nowrap; }
 .search input { min-width: 0; border-color: #8499b0; }
+.address-field { position: relative; flex: 1; min-width: 0; }
+.address-options {
+  position: absolute; z-index: 4; inset: calc(100% + 4px) 0 auto;
+  max-height: 18rem; overflow-y: auto; list-style: none; margin: 0; padding: 4px;
+  color: var(--ink); background: var(--surface); border: 1px solid #8499b0;
+  border-radius: 8px; box-shadow: 0 8px 28px #13294326;
+}
+.address-options li { padding: 10px; cursor: pointer; overflow-wrap: anywhere; }
+.address-options li:hover, .address-options [aria-selected="true"] { background: var(--accent-soft); }
+.address-options small { display: block; color: var(--muted); }
+.address-context { color: var(--muted); font-size: .9rem; }
+.address-status:empty { margin: 0; display: none; }
 .search .hint { font-size: .82rem; }
 .search-options summary { color: var(--accent); cursor: pointer; min-height: 36px; padding-block: 7px; font-weight: 600; }
 .search-options .search-row { margin-top: 8px; }
@@ -295,9 +307,18 @@ footer{border-top:1px solid var(--line);padding-block:32px;font-size:.92rem;colo
         <form class="search" id="search">
           <label for="adresse" id="rechercher">Adresse de la propriété</label>
           <div class="search-row">
-            <input type="text" id="adresse" name="adresse" autocomplete="street-address" placeholder="Ex. 1234, rue des Érables" required maxlength="160">
+            <div class="address-field">
+              <input type="text" id="adresse" name="adresse" autocomplete="off"
+                role="combobox" aria-autocomplete="list" aria-expanded="false"
+                aria-controls="address-options" aria-describedby="address-source"
+                placeholder="Ex. 275 rue Notre-Dame" required maxlength="160">
+              <ul class="address-options" id="address-options" role="listbox" aria-label="Adresses suggérées" hidden></ul>
+            </div>
             <button class="btn btn-primary" type="submit">Rechercher</button>
           </div>
+          <p id="address-context" class="address-context" hidden></p>
+          <p id="address-status" class="address-status hint" role="status"></p>
+          <p id="address-source" class="hint">Suggestions fournies par <a href="https://www.donneesquebec.ca/recherche/dataset/adresses-quebec/resource/64cbcdfc-4dd6-42e7-9a5d-489e775da83b">Adresses Québec</a>.</p>
           <details class="search-options">
             <summary>Préciser la recherche</summary>
             <div class="search-row">
@@ -616,6 +637,154 @@ footer{border-top:1px solid var(--line);padding-block:32px;font-size:.92rem;colo
     link.setAttribute('aria-label', 'Demander les documents du vendeur, fiche Centris ' + number);
     return link;
   }
+
+  function enableAddressSuggestions() {
+    var input = $('adresse');
+    var list = $('address-options');
+    var feedback = $('address-status');
+    var context = $('address-context');
+    var sector = $('secteur');
+    var postal = $('code_postal');
+    var endpoint = 'https://servicescarto.mrnf.gouv.qc.ca/pes/rest/services/Territoire/Adresse_Geocodage/GeocodeServer/suggest';
+    var options = [];
+    var active = -1;
+    var timer;
+    var request;
+    var selected;
+
+    function closeList() {
+      clearTimeout(timer);
+      if (request) request.abort();
+      request = undefined;
+      list.hidden = true;
+      input.setAttribute('aria-expanded', 'false');
+      input.removeAttribute('aria-activedescendant');
+      feedback.textContent = '';
+      active = -1;
+    }
+
+    function choose(index) {
+      var option = options[index];
+      if (!option) return;
+      input.value = option.street;
+      sector.value = option.city;
+      postal.value = option.postal;
+      selected = option;
+      context.textContent = [option.city, option.postal].filter(Boolean).join(' · ');
+      context.hidden = false;
+      closeList();
+      input.focus();
+    }
+
+    function parseSuggestions(payload) {
+      if (!Array.isArray(payload.suggestions)) throw new Error('Réponse inattendue');
+      var entries = new Map();
+      for (var candidate of payload.suggestions) {
+        if (candidate.isCollection || typeof candidate.text !== 'string') continue;
+        var match = candidate.text.match(/^(\d[^,]+),\s*(.+)$/);
+        if (!match) continue;
+        var suffix = match[2].match(/\s+([A-Z]\d[A-Z])\s?(\d[A-Z]\d)$/i);
+        var city = suffix ? match[2].slice(0, suffix.index).trim() : match[2].trim();
+        var code = suffix ? (suffix[1] + ' ' + suffix[2]).toUpperCase() : '';
+        entries.set(candidate.text, { street: match[1].trim(), city: city, postal: code });
+      }
+      return [...entries.values()].slice(0, 6);
+    }
+
+    function showSuggestions(entries) {
+      options = entries;
+      list.replaceChildren();
+      for (var [index, option] of entries.entries()) {
+        var row = document.createElement('li');
+        row.id = 'address-option-' + index;
+        row.setAttribute('role', 'option');
+        row.setAttribute('aria-selected', 'false');
+        row.dataset.index = index;
+        row.textContent = option.street;
+        var locality = document.createElement('small');
+        locality.textContent = [option.city, option.postal].filter(Boolean).join(' · ');
+        row.append(locality);
+        list.append(row);
+      }
+      list.hidden = entries.length === 0;
+      input.setAttribute('aria-expanded', String(!list.hidden));
+      feedback.textContent = list.hidden
+        ? 'Aucune suggestion. Vous pouvez entrer l’adresse manuellement.'
+        : entries.length + (entries.length === 1 ? ' suggestion disponible.' : ' suggestions disponibles.');
+    }
+
+    function scheduleSuggestions() {
+      closeList();
+      if (selected) {
+        if (sector.value === selected.city) sector.value = '';
+        if (postal.value === selected.postal) postal.value = '';
+        selected = undefined;
+        context.hidden = true;
+      }
+      var query = input.value.trim();
+      if (query.length < 5 || !/[0-9]/.test(query) || !/\p{L}/u.test(query)) return;
+      timer = setTimeout(async function () {
+        var pending = new AbortController();
+        request = pending;
+        var deadline = setTimeout(function () { pending.abort(); }, 5500);
+        try {
+          var params = new URLSearchParams({ text: query, maxSuggestions: '6', f: 'json' });
+          var response = await fetch(endpoint + '?' + params, {
+            signal: pending.signal, credentials: 'omit', referrerPolicy: 'no-referrer'
+          });
+          if (!response.ok) throw new Error('Service indisponible');
+          var entries = parseSuggestions(await response.json());
+          if (request === pending && !pending.signal.aborted) showSuggestions(entries);
+        } catch {
+          if (request === pending) {
+            feedback.textContent = 'Suggestions indisponibles. Vous pouvez entrer l’adresse manuellement.';
+          }
+        } finally {
+          clearTimeout(deadline);
+          if (request === pending) request = undefined;
+        }
+      }, 300);
+    }
+
+    input.addEventListener('input', function (event) {
+      if (event.isComposing) { closeList(); return; }
+      scheduleSuggestions();
+    });
+    input.addEventListener('compositionend', scheduleSuggestions);
+    input.addEventListener('blur', closeList);
+    input.addEventListener('keydown', function (event) {
+      if (event.isComposing) return;
+      if (event.key === 'Escape' && (!list.hidden || request)) {
+        event.preventDefault();
+        closeList();
+      }
+      if (list.hidden) return;
+      if (event.key === 'Enter' && active >= 0) {
+        event.preventDefault();
+        choose(active);
+      }
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        var direction = event.key === 'ArrowDown' ? 1 : -1;
+        active = active < 0 && direction < 0
+          ? options.length - 1 : (active + direction + options.length) % options.length;
+        var row = list.children[active];
+        for (var item of list.children) item.setAttribute('aria-selected', String(item === row));
+        input.setAttribute('aria-activedescendant', row.id);
+        row.scrollIntoView({ block: 'nearest' });
+      }
+    });
+    list.addEventListener('mousedown', function (event) { event.preventDefault(); });
+    list.addEventListener('click', function (event) {
+      var row = event.target.closest('[role="option"]');
+      if (row) choose(Number(row.dataset.index));
+    });
+    [sector, postal].forEach(function (field) {
+      field.addEventListener('input', function () { context.hidden = true; });
+    });
+    $('search').addEventListener('submit', closeList);
+  }
+  enableAddressSuggestions();
 
   var staticPreview = location.protocol === 'file:' || location.hostname.endsWith('.github.io');
   $('static-search').hidden = !staticPreview;
