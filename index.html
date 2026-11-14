@@ -240,15 +240,26 @@ footer{border-top:1px solid var(--line);padding-block:32px;font-size:.92rem;colo
       <div class="hero-copy">
         <p class="eyebrow">Pour les courtiers immobiliers du Québec</p>
         <h1>Tout ce que les registres disent d'une adresse, dans un seul relevé.</h1>
-        <p class="lead">Entrez une adresse. Nous interrogeons le registre foncier, les rôles d'évaluation municipaux, le cadastre, Centris et les cartes de risques, puis nous vous remettons un dossier clair avec les points à revérifier.</p>
-        <form class="search" id="search" novalidate>
-          <label for="adresse">Adresse de la propriété</label>
+        <p class="lead">Consultez les inscriptions et l’historique disponibles pour une adresse à Laval.</p>
+        <form class="search" id="search">
+          <label for="adresse">Numéro civique et rue</label>
           <div class="search-row">
-            <input type="text" id="adresse" name="adresse" autocomplete="street-address" placeholder="ex. 1234, rue des Érables, Laval">
-            <button class="btn btn-primary" type="submit">Voir un exemple de relevé</button>
+            <input type="text" id="adresse" name="adresse" autocomplete="street-address" placeholder="2054, rue Gosselin" required maxlength="160">
+            <button class="btn btn-primary" type="submit">Rechercher</button>
           </div>
-          <p class="hint">La recherche réelle n'est pas encore branchée. Le bouton ouvre un relevé fictif.</p>
+          <label for="secteur">Secteur (facultatif)</label>
+          <div class="search-row">
+            <input type="text" id="secteur" name="secteur" placeholder="Chomedey" maxlength="100">
+          </div>
+          <label for="code_postal">Code postal (recherche dans le flux)</label>
+          <div class="search-row">
+            <input id="code_postal" name="code_postal" autocomplete="postal-code" maxlength="7" placeholder="H7T 2B1">
+            <input name="appartement" aria-label="Appartement" maxlength="15" placeholder="Appartement">
+          </div>
+          <p class="hint">La recherche affiche les données disponibles. <a href="#exemple">Voir le relevé fictif complet</a>.</p>
         </form>
+        <p id="recherche-etat" role="status"></p>
+        <div id="recherche-resultats"></div>
       </div>
 
       <div class="sheet" aria-label="Aperçu d'un relevé fictif">
@@ -607,9 +618,79 @@ footer{border-top:1px solid var(--line);padding-block:32px;font-size:.92rem;colo
   }
   window.addEventListener('hashchange', route);
 
-  $('search').addEventListener('submit', function (e) {
-    e.preventDefault();
-    location.hash = 'exemple';
+  $('search').addEventListener('submit', async function (event) {
+    event.preventDefault();
+    var status = $('recherche-etat');
+    var results = $('recherche-resultats');
+    var button = event.currentTarget.querySelector('button[type="submit"]');
+    var params = new URLSearchParams(new FormData(event.currentTarget));
+    button.disabled = true;
+    status.textContent = 'Recherche en cours…';
+    results.replaceChildren();
+    try {
+      var response = await fetch('./api/recherche?' + params);
+      var payload = await response.json();
+      if (!response.ok) throw new Error(payload.erreur);
+      if (payload.fiches) {
+        status.textContent = payload.fiches.length + ' fiche(s) dans le flux Centris.';
+        var labels = {
+          statut: 'Statut', genre: 'Genre', prix_demande: 'Prix demandé', prix_initial: 'Prix initial',
+          prix_conclu: 'Prix vendu', loyer_demande: 'Loyer demandé', loyer_conclu: 'Loyer conclu',
+          date_transaction: 'Date de transaction', annee_construction: 'Année de construction',
+          superficie_terrain: 'Superficie du terrain', unite_terrain: 'Unité du terrain',
+          superficie_habitable: 'Superficie habitable', unite_habitable: 'Unité habitable',
+          evaluation_municipale: 'Évaluation municipale', annee_evaluation: 'Année de l’évaluation',
+          type_batiment: 'Type de bâtiment'
+        };
+        for (var fiche of payload.fiches) {
+          var title = document.createElement('h3');
+          title.textContent = 'Centris ' + fiche.numero;
+          results.append(title);
+          for (var version of fiche.versions.slice().reverse()) {
+            var section = document.createElement('details');
+            var caption = document.createElement('summary');
+            caption.textContent = 'Version reçue le ' + new Date(version.observe_le).toLocaleString('fr-CA');
+            var fields = document.createElement('ul');
+            for (var key of Object.keys(labels)) {
+              if (!version.fiche[key]) continue;
+              var field = document.createElement('li');
+              field.textContent = labels[key] + ' : ' + version.fiche[key];
+              fields.append(field);
+            }
+            section.append(caption, fields);
+            results.append(section);
+          }
+        }
+        return;
+      }
+      var total = 0;
+      for (var group of payload.groupes) {
+        total += group.total;
+        var heading = document.createElement('h3');
+        heading.textContent = group.statut === 'En vigueur' ? 'Inscriptions actives' : 'Historique disponible';
+        var coverage = document.createElement('p');
+        coverage.textContent = 'Matrix Centris · ' + group.region +
+          (group.du ? ' · du ' + group.du + ' au ' + group.au : ' · export du ' + group.extraction);
+        var list = document.createElement('ul');
+        for (var listing of group.resultats) {
+          var item = document.createElement('li');
+          item.textContent = listing.adresse + ', ' + listing.secteur + ' · Centris ' + listing.numero +
+            (listing.prix ? ' · ' + listing.prix : '') +
+            (listing.loyer ? ' · ' + listing.loyer + ' / mois' : '');
+          list.append(item);
+        }
+        var summary = document.createElement('p');
+        summary.textContent = group.total ? group.resultats.length + ' sur ' + group.total + ' affichés.' :
+          'Aucun résultat dans cet export.';
+        results.append(heading, coverage, list, summary);
+      }
+      status.textContent = total + (total === 1 ? ' fiche trouvée.' : ' fiches trouvées.');
+    } catch (error) {
+      status.textContent = error instanceof SyntaxError ? 'Service de recherche indisponible.' :
+        error.message || 'Service de recherche indisponible.';
+    } finally {
+      button.disabled = false;
+    }
   });
 
   /* ---------- exemple de relevé (données fictives) ---------- */
