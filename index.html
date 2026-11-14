@@ -3,33 +3,21 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="moncourtier.québec rassemble le registre foncier, les rôles d'évaluation, le cadastre et les cartes de risques dans un seul relevé de propriété pour les courtiers immobiliers du Québec.">
+<meta name="description" content="Recherchez une propriété au Québec et trouvez les sources pour vérifier son lot, son historique et ses documents.">
 <meta name="robots" content="noindex">
-<title>moncourtier.québec</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<title>MonCourtier Québec | Recherche immobilière</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-/* Layout : une feuille de plan cadastral. Colonne de 1120 px, grille à deux volets dans le héros,
-   données en chasse fixe comme sur un relevé officiel, une seule couleur d'accent (vert d'arpentage). */
-:root{
-  --bg:#F3F6F2; --surface:#FFFFFF; --surface-2:#E8EEE8; --ink:#10231C; --muted:#56675F; --line:#D3DCD5;
-  --accent:#0B6A4E; --accent-ink:#FFFFFF; --accent-soft:#DCEFE6;
-  --flag:#8F5508; --flag-soft:#FBEBCB; --bad:#A3362B; --bad-soft:#F8DEDA;
-  --display:"Bricolage Grotesque","Avenir Next","Segoe UI",sans-serif;
-  --body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
-  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
-  --r:10px;
-}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --bg:#0D1613; --surface:#14211C; --surface-2:#1B2B25; --ink:#E6EEE9; --muted:#9DB0A6; --line:#2B3D35;
-    --accent:#4CC79A; --accent-ink:#06231A; --accent-soft:#143328;
-    --flag:#F0B955; --flag-soft:#3A2C10; --bad:#F0958A; --bad-soft:#3B1C18; color-scheme:dark;
-  }
-}
-:root[data-theme="dark"]{
-  --bg:#0D1613; --surface:#14211C; --surface-2:#1B2B25; --ink:#E6EEE9; --muted:#9DB0A6; --line:#2B3D35;
-  --accent:#4CC79A; --accent-ink:#06231A; --accent-soft:#143328;
-  --flag:#F0B955; --flag-soft:#3A2C10; --bad:#F0958A; --bad-soft:#3B1C18; color-scheme:dark;
+:root {
+  color-scheme: light;
+  --bg: #f7f8fa; --surface: #fff; --surface-2: #eaf0f7; --ink: #14263e;
+  --muted: #4b5f75; --line: #cbd7e4; --accent: #174c80;
+  --accent-ink: #fff; --accent-soft: #e0edf9;
+  --flag: #714d18; --flag-soft: #fff1d6; --bad: #8a302a; --bad-soft: #f6e4e1;
+  --body: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
+  --display: var(--body);
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --r: 10px;
 }
 *{box-sizing:border-box}
 body{margin:0}
@@ -206,57 +194,121 @@ footer{border-top:1px solid var(--line);padding-block:32px;font-size:.92rem;colo
 .foot a{color:var(--ink);text-decoration:none;display:inline-flex;min-height:36px;align-items:center}
 .foot a:hover{text-decoration:underline}
 .soon{font-family:var(--mono);font-size:.72rem;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:1px 8px;margin-left:8px}
+
+.wrap { max-width: 1200px; padding-inline: clamp(18px, 4vw, 40px); }
+.identity { background: #132943; color: #fff; border-bottom: 3px solid #95b7da; }
+.identity .wrap { padding-block: 9px; font-size: .82rem; font-weight: 600; }
+.top { background: var(--surface); }
+.top .wrap { min-height: 75px; justify-content: space-between; }
+.brand { font-size: clamp(1rem, 3vw, 1.35rem); }
+.brand .tld { display: inline; }
+.brand-mark {
+  display: grid; place-items: center; width: 38px; height: 38px; flex: none;
+  border: 1px solid #a5bbd4; border-radius: 50%; color: #174c80;
+  font: 25px/1 Georgia, serif; background: #edf4fb;
+}
+.top .btn { font-size: .9rem; }
+.hero {
+  background: linear-gradient(110deg, #f8fafd 24%, #e6eff8);
+  border-bottom: 1px solid var(--line); padding-block: clamp(32px, 6vw, 76px);
+}
+.hero h1 {
+  font-size: clamp(2.55rem, 5.55vw, 4.45rem);
+  letter-spacing: -.055em; line-height: .98; text-wrap: initial;
+}
+.hero .lead { max-width: 49ch; }
+.hero-copy { gap: 17px; }
+.hero .sheet { box-shadow: 0 14px 35px #18395f12; }
+.search {
+  margin-top: 9px; padding: clamp(14px, 2vw, 23px); border: 1px solid var(--line);
+  border-radius: var(--r); background: var(--surface); gap: 10px;
+}
+.search-row { flex-wrap: nowrap; }
+.search input { min-width: 0; border-color: #8499b0; }
+.search .hint { font-size: .82rem; }
+.search-options summary { color: var(--accent); cursor: pointer; min-height: 36px; padding-block: 7px; font-weight: 600; }
+.search-options .search-row { margin-top: 8px; }
+.search-options label { display: grid; min-width: 0; flex: 1; font-size: .85rem; }
+#recherche-etat:empty, #recherche-resultats:empty { display: none; }
+#recherche-resultats { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; overflow-wrap: anywhere; }
+#recherche-resultats h3:not(:first-child) { margin-top: 18px; }
+#recherche-resultats details { margin-top: 6px; }
+.plan { background-color: #eef4f9; background-image: radial-gradient(#c4d4e5 1px, transparent 1px); background-size: 14px 14px; }
+.plan .nb { stroke: #aabfd3; }
+.preview-foot { padding: 13px 18px; border-top: 1px solid var(--line); }
+.sources-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.source-card { padding: 22px; border: 1px solid var(--line); border-radius: var(--r); display: grid; gap: 10px; align-content: start; background: var(--surface); }
+.source-card p { color: var(--muted); }
+.source-card a { font-weight: 650; width: fit-content; }
+#sources, #fonctionnement, #contenu, #faq, #rechercher { scroll-margin-top: 90px; }
+.rep-tools { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0; }
+.rep-tools button[aria-pressed="true"] { color: #fff; background: var(--accent); border-color: var(--accent); }
+.skip { position: absolute; top: 4px; left: 8px; z-index: 20; padding: 8px 14px; background: #fff; transform: translateY(-170%); }
+.skip:focus { transform: none; }
+.btn:disabled { opacity: .65; cursor: wait; }
+@media (max-width: 760px) {
+  .sources-grid { grid-template-columns: 1fr; }
+  .top .wrap { min-height: 62px; }
+}
+@media (max-width: 480px) {
+  .search > .search-row { flex-direction: column; }
+  .search > .search-row input { flex: auto; }
+  .brand-mark { width: 32px; height: 32px; }
+}
+@media print {
+  .top, .identity, footer, .rep-tools, .skip { display: none !important; }
+  #view-exemple section { padding: 0; }
+  .rep-sec { break-inside: avoid; }
+}
 </style>
 </head>
 <body>
 
-<div class="mock"><div class="wrap">Maquette de travail : textes et tarifs provisoires. Aucune donnée réelle, aucun compte créé.</div></div>
 
+<a class="skip" href="#main">Aller au contenu</a>
+<div class="identity"><div class="wrap">Service indépendant de recherche immobilière au Québec</div></div>
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="#accueil" aria-label="moncourtier.québec, accueil">
-      <svg viewBox="0 0 30 30" aria-hidden="true"><path d="M4 8 L22 4 L26 22 L7 26 Z" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2.2" stroke-linejoin="round"/><circle cx="22" cy="4" r="3" fill="var(--accent)"/></svg>
+    <a class="brand" href="#accueil" aria-label="MonCourtier Québec, accueil">
+      <span class="brand-mark" aria-hidden="true">⚜</span>
       <span>moncourtier<span class="tld">.québec</span></span>
     </a>
-    <nav class="nav" aria-label="Sections">
-      <a href="#fonctionnement">Fonctionnement</a>
-      <a href="#contenu">Contenu du relevé</a>
-      <a href="#tarifs">Tarifs</a>
-      <a href="#faq">Questions</a>
+    <nav class="nav" aria-label="Navigation principale">
+      <a href="#rechercher">Recherche</a>
+      <a href="#sources">Sources officielles</a>
+      <a href="#faq">Questions fréquentes</a>
     </nav>
-    <div class="acts">
-      <a class="btn btn-ghost" href="#connexion">Connexion</a>
-      <a class="btn btn-primary" href="#inscription">Créer un compte</a>
-    </div>
+    <a class="btn btn-ghost" href="#exemple">Voir un exemple</a>
   </div>
 </header>
 
-<main id="main">
+<main id="main" tabindex="-1">
 
 <!-- ACCUEIL -->
 <div id="view-accueil">
   <section class="hero">
     <div class="wrap hero-grid">
       <div class="hero-copy">
-        <p class="eyebrow">Pour les courtiers immobiliers du Québec</p>
-        <h1>Tout ce que les registres disent d'une adresse, dans un seul relevé.</h1>
-        <p class="lead">Consultez les inscriptions et l’historique disponibles pour une adresse dans les exports Matrix disponibles.</p>
+
+        <h1>Rechercher une propriété au Québec</h1>
+        <p class="lead">Partez d’une adresse pour trouver les inscriptions disponibles, identifier le lot et savoir quels documents demander.</p>
         <form class="search" id="search">
-          <label for="adresse">Adresse</label>
+          <label for="adresse" id="rechercher">Adresse de la propriété</label>
           <div class="search-row">
-            <input type="text" id="adresse" name="adresse" autocomplete="street-address" placeholder="2054, rue Gosselin" required maxlength="160">
+            <input type="text" id="adresse" name="adresse" autocomplete="street-address" placeholder="Ex. 1234, rue des Érables" required maxlength="160">
             <button class="btn btn-primary" type="submit">Rechercher</button>
           </div>
-          <label for="secteur">Secteur (facultatif)</label>
-          <div class="search-row">
-            <input type="text" id="secteur" name="secteur" placeholder="Chomedey" maxlength="100">
-          </div>
-          <label for="code_postal">Code postal (recherche dans le flux)</label>
-          <div class="search-row">
-            <input id="code_postal" name="code_postal" autocomplete="postal-code" maxlength="7" placeholder="H7T 2B1">
-            <input name="appartement" aria-label="Appartement" maxlength="15" placeholder="Appartement">
-          </div>
-          <p class="hint">La recherche affiche les données disponibles. <a href="#exemple">Voir le relevé fictif complet</a>.</p>
+          <details class="search-options">
+            <summary>Préciser la recherche</summary>
+            <div class="search-row">
+              <label for="secteur">Secteur<input type="text" id="secteur" name="secteur" maxlength="100"></label>
+              <label for="code_postal">Code postal<input type="text" id="code_postal" name="code_postal" autocomplete="postal-code" maxlength="7"></label>
+            </div>
+            <div class="search-row">
+              <label for="appartement">Appartement<input type="text" id="appartement" name="appartement" maxlength="15"></label>
+            </div>
+          </details>
+          <p class="hint" id="static-search" hidden>La recherche réelle nécessite une connexion à la base de données. <a href="#sources">Consulter les sources officielles</a>.</p>
         </form>
         <p id="recherche-etat" role="status"></p>
         <div id="recherche-resultats"></div>
@@ -284,126 +336,50 @@ footer{border-top:1px solid var(--line);padding-block:32px;font-size:.92rem;colo
           <text x="150" y="142">15,24 m</text>
           <text x="44" y="92">…542</text><text x="250" y="88">…544</text><text x="348" y="84">…545</text>
         </svg>
+
         <ul class="rows">
-          <li><span>Registre foncier : titres et hypothèques</span><span class="chip ok">Vérifié</span></li>
-          <li><span>Rôle d'évaluation et taxes</span><span class="chip ok">Vérifié</span></li>
-          <li><span>Servitude à l'arrière du lot</span><span class="chip warn">À vérifier</span></li>
-          <li><span>Zone inondable</span><span class="chip ok">Vérifié</span></li>
-          <li><span>Certificat de localisation</span><span class="chip miss">Introuvable</span></li>
+          <li><span>Lot cadastral</span><strong class="mono">9 876 543</strong></li>
+          <li><span>Superficie du terrain</span><strong class="mono">557,4 m²</strong></li>
+          <li><span>Certificat de localisation</span><span class="chip warn">À demander</span></li>
         </ul>
+        <div class="preview-foot"><a href="#exemple">Consulter le dossier d’exemple <span aria-hidden="true">→</span></a></div>
       </div>
     </div>
   </section>
 
-  <div class="wrap">
-    <div class="sources">
-      <p class="eyebrow">Sources prévues</p>
-      <ul>
-        <li>Registre foncier du Québec</li>
-        <li>Rôles d'évaluation des municipalités</li>
-        <li>Centris</li>
-        <li>Cadastre du Québec</li>
-        <li>Zonage municipal</li>
-        <li>Zones inondables</li>
-        <li>Répertoire des terrains contaminés</li>
-        <li>Taxes municipales et scolaires</li>
-      </ul>
-    </div>
-  </div>
-
-  <section id="fonctionnement">
+  <section id="sources" aria-labelledby="sources-titre">
     <div class="wrap">
       <div class="head">
-        <h2>De l'adresse au dossier en trois étapes</h2>
-        <p class="lead">Vous n'ouvrez plus six portails gouvernementaux et municipaux pour une seule propriété.</p>
+        <h2 id="sources-titre">Vérifier les renseignements à la source</h2>
+        <p class="lead">Commencez par le numéro de lot pour passer de la carte cadastrale aux actes publiés.</p>
       </div>
-      <ol class="steps">
-        <li><h3>Vous entrez l'adresse</h3><p>Nous retrouvons le lot et vous demandons de confirmer que c'est le bon avant d'aller plus loin.</p></li>
-        <li><h3>Nous consultons les sources</h3><p>Chaque registre est interrogé et chaque renseignement garde la trace de sa source et de sa date.</p></li>
-        <li><h3>Vous recevez le relevé</h3><p>Un PDF à votre nom, les documents sources en pièces jointes, et la liste de ce qui reste à valider.</p></li>
-      </ol>
-    </div>
-  </section>
-
-  <section id="contenu" class="band">
-    <div class="wrap">
-      <div class="head">
-        <h2>Ce que contient un relevé</h2>
-        <p class="lead">Chaque ligne porte un statut : vérifié, à vérifier ou introuvable. Rien n'est laissé en blanc sans explication.</p>
-      </div>
-      <div class="toc">
-        <div><span class="n">A</span><h3>Identification du lot</h3><p>Numéro de lot, dimensions, superficie, circonscription foncière et matricule.</p></div>
-        <div><span class="n">B</span><h3>Propriétaires et titres</h3><p>Propriétaires inscrits, mode et date d'acquisition, chaîne des derniers actes.</p></div>
-        <div><span class="n">C</span><h3>Charges et servitudes</h3><p>Hypothèques, servitudes, préavis et autres inscriptions publiées contre le lot.</p></div>
-        <div><span class="n">D</span><h3>Évaluation et taxes</h3><p>Valeur du terrain et du bâtiment au rôle en vigueur, taxes municipales et scolaires.</p></div>
-        <div><span class="n">E</span><h3>Zonage et usages</h3><p>Zone, usages permis et écarts visibles entre l'usage déclaré et l'usage autorisé.</p></div>
-        <div><span class="n">F</span><h3>Risques</h3><p>Zones inondables cartographiées et inscriptions au répertoire des terrains contaminés.</p></div>
-        <div><span class="n">G</span><h3>Historique de marché</h3><p>Inscriptions antérieures, prix demandés et prix vendus tirés de Centris.</p></div>
-        <div><span class="n">H</span><h3>Pièces jointes</h3><p>Actes, comptes de taxes et fiches du rôle, prêts à verser à votre dossier de courtage.</p></div>
-      </div>
-      <p style="margin-top:28px"><a class="btn btn-ghost" href="#exemple">Ouvrir l'exemple complet</a></p>
-    </div>
-  </section>
-
-  <section>
-    <div class="wrap">
-      <div class="head"><h2>Utile des deux côtés de la transaction</h2></div>
-      <div class="who">
-        <article><h3>Vous inscrivez la propriété</h3><p>Arrivez chez le vendeur avec le portrait du lot déjà en main, puis remplissez le contrat de courtage et les déclarations du vendeur sans chercher l'information deux fois.</p></article>
-        <article><h3>Vous représentez l'acheteur</h3><p>Avant de rédiger la promesse d'achat, sachez ce qui est publié contre l'immeuble et quelles conditions méritent d'être ajoutées.</p></article>
+      <div class="sources-grid">
+        <article class="source-card">
+          <h3>Cadastre du Québec</h3>
+          <p>Trouvez le numéro de lot, sa forme et sa position par rapport aux terrains voisins.</p>
+          <a href="https://appli.foncier.gouv.qc.ca/infolot/">Ouvrir la carte Infolot ↗</a>
+        </article>
+        <article class="source-card">
+          <h3>Registre foncier du Québec</h3>
+          <p>Recherchez les actes de vente, hypothèques et servitudes publiés pour un lot.</p>
+          <a href="https://www.quebec.ca/habitation-territoire/information-fonciere/registre-foncier">Accéder au Registre foncier ↗</a>
+        </article>
+        <article class="source-card">
+          <h3>Documents du vendeur</h3>
+          <p>Demandez la déclaration du vendeur et le certificat de localisation au courtier. La transmission dépend de la disponibilité des pièces et de votre demande.</p>
+          <a href="mailto:info@alexandrearrata.com?subject=Demande%20de%20documents%20du%20vendeur&amp;body=Adresse%20de%20la%20propri%C3%A9t%C3%A9%20%3A%20%0D%0ANum%C3%A9ro%20Centris%20%28si%20connu%29%20%3A%20%0D%0ADocuments%20souhait%C3%A9s%20%3A%20">Demander les documents du vendeur</a>
+        </article>
       </div>
     </div>
   </section>
 
-  <section id="tarifs" class="band">
+  <section id="faq" class="band" aria-labelledby="faq-titre">
     <div class="wrap">
-      <div class="head">
-        <h2>Payez au relevé, sans abonnement</h2>
-        <p class="lead">Tarifs d'exemple, taxes en sus. Les montants définitifs restent à fixer.</p>
-      </div>
-      <div class="prices">
-        <div class="price">
-          <h3>À l'unité</h3>
-          <p class="amount">59 $ <small>par relevé</small></p>
-          <p>Pour un dossier ponctuel. Aucun engagement.</p>
-          <a class="btn btn-ghost" href="#inscription">Commencer</a>
-        </div>
-        <div class="price best">
-          <h3>Carnet de 10</h3>
-          <p class="amount">52 $ <small>par relevé</small></p>
-          <p>520 $ pour 10 relevés, soit 70 $ de moins qu'à l'unité. Les relevés n'expirent pas.</p>
-          <a class="btn btn-primary" href="#inscription">Choisir le carnet</a>
-        </div>
-        <div class="price">
-          <h3>Agences</h3>
-          <p class="amount">Sur mesure</p>
-          <p>Facturation centralisée, comptes pour l'équipe et tarif selon le volume.</p>
-          <a class="btn btn-ghost" href="#inscription">Ouvrir un compte d'agence</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="faq">
-    <div class="wrap">
-      <div class="head"><h2>Questions fréquentes</h2></div>
+      <div class="head"><h2 id="faq-titre">Questions fréquentes</h2></div>
       <div class="faq">
-        <details><summary>Le relevé remplace-t-il mes propres vérifications ?</summary><p>Non. Il rassemble et organise ce que les sources publiques contiennent. Votre jugement professionnel et vos obligations de vérification restent entiers.</p></details>
-        <details><summary>D'où viennent les renseignements ?</summary><p>Du registre foncier, des rôles d'évaluation municipaux, du cadastre, de Centris et des cartes de zones inondables. Chaque ligne du relevé indique sa source et la date de consultation.</p></details>
-        <details><summary>Que se passe-t-il si une information est introuvable ?</summary><p>La ligne est marquée « Introuvable » avec une suggestion sur la façon de l'obtenir, par exemple auprès du vendeur ou de la municipalité.</p></details>
-        <details><summary>Qui peut ouvrir un compte ?</summary><p>Les courtiers immobiliers titulaires d'un permis de l'OACIQ et le personnel d'agence qui travaille sous leur supervision.</p></details>
-        <details><summary>Puis-je remettre le relevé à mon client ?</summary><p>Oui. Le PDF est à votre nom et peut être versé à votre dossier de courtage avec ses pièces jointes.</p></details>
-      </div>
-    </div>
-  </section>
-
-  <section class="band">
-    <div class="wrap cta-end">
-      <h2>Voyez d'abord un relevé complet.</h2>
-      <p class="lead">L'exemple est fictif, mais il montre exactement la forme du dossier que vous remettrez à votre client.</p>
-      <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <a class="btn btn-primary" href="#exemple">Ouvrir l'exemple</a>
-        <a class="btn btn-ghost" href="#inscription">Créer un compte</a>
+        <details><summary>Pourquoi chercher avec le numéro de lot?</summary><p>Le numéro de lot identifie la parcelle au cadastre. Une adresse, notamment en copropriété, peut correspondre à plusieurs lots.</p></details>
+        <details><summary>Où trouver un acte de vente?</summary><p>Le Registre foncier permet de repérer l’acte publié à partir du lot. Consultez le Registre pour connaître les modalités d’accès aux documents.</p></details>
+        <details><summary>Comment obtenir la déclaration du vendeur?</summary><p>Le bouton de demande ouvre un courriel. Indiquez l’adresse, la référence Centris si vous la connaissez et les documents souhaités. Le courtier pourra faire le suivi.</p></details>
       </div>
     </div>
   </section>
@@ -422,6 +398,12 @@ footer{border-top:1px solid var(--line);padding-block:32px;font-size:.92rem;colo
         </div>
       </div>
       <div class="tally" id="tally" aria-label="Sommaire des statuts"></div>
+      <div class="rep-tools" aria-label="Filtrer le dossier d’exemple">
+        <button type="button" class="btn btn-ghost" data-report-filter="all" aria-pressed="true">Tout voir</button>
+        <button type="button" class="btn btn-ghost" data-report-filter="foncier" aria-pressed="false">Registre foncier</button>
+        <button type="button" class="btn btn-ghost" data-report-filter="municipal" aria-pressed="false">Évaluation et zonage</button>
+        <button type="button" class="btn btn-ghost" data-report-filter="autres" aria-pressed="false">Historique et vérifications</button>
+      </div>
       <div class="rep-grid">
         <div class="sheet">
           <svg class="plan" viewBox="0 0 440 190" role="img" aria-label="Plan du lot et des lots voisins">
@@ -570,28 +552,23 @@ footer{border-top:1px solid var(--line);padding-block:32px;font-size:.92rem;colo
 
 </main>
 
+
 <footer>
   <div class="wrap foot">
     <div>
-      <p style="font-family:var(--display);font-weight:700;font-size:1.2rem;color:var(--ink)">moncourtier.québec</p>
-      <p>Le dossier de propriété des courtiers du Québec.</p>
-      <p style="margin-top:10px">Maquette de travail. Contenus provisoires.</p>
+      <h3>MonCourtier Québec</h3>
+      <p>Service indépendant de recherche immobilière.</p>
     </div>
     <div>
-      <h3>Produit</h3>
+      <h3>Recherche</h3>
       <ul>
-        <li><a href="#fonctionnement">Fonctionnement</a></li>
-        <li><a href="#contenu">Contenu du relevé</a></li>
-        <li><a href="#tarifs">Tarifs</a></li>
-        <li><a href="#faq">Questions fréquentes</a></li>
+        <li><a href="#sources">Sources officielles</a></li>
+        <li><a href="#exemple">Dossier d’exemple</a></li>
       </ul>
     </div>
     <div>
-      <h3>Nos autres outils</h3>
-      <ul>
-        <li>Calculateur d'évaluation municipale<span class="soon">à venir</span></li>
-        <li style="margin-top:8px">Répertoire de courtiers<span class="soon">à venir</span></li>
-      </ul>
+      <h3>Contact</h3>
+      <a href="mailto:info@alexandrearrata.com">info@alexandrearrata.com</a>
     </div>
   </div>
 </footer>
@@ -607,7 +584,8 @@ footer{border-top:1px solid var(--line);padding-block:32px;font-size:.92rem;colo
     var view = VIEWS.indexOf(h) > 0 ? h : 'accueil';
     VIEWS.forEach(function (v) { $('view-' + v).hidden = (v !== view); });
     if (view === 'accueil' && h && h !== 'accueil') {
-      var t = $(h);
+      var legacySections = { fonctionnement: 'sources', contenu: 'sources' };
+      var t = $(legacySections[h] || h);
       if (t) { t.scrollIntoView(); return; }
     }
     window.scrollTo(0, 0);
@@ -639,10 +617,17 @@ footer{border-top:1px solid var(--line);padding-block:32px;font-size:.92rem;colo
     return link;
   }
 
+  var staticPreview = location.protocol === 'file:' || location.hostname.endsWith('.github.io');
+  $('static-search').hidden = !staticPreview;
+
   $('search').addEventListener('submit', async function (event) {
     event.preventDefault();
     var status = $('recherche-etat');
     var results = $('recherche-resultats');
+    if (staticPreview) {
+      status.textContent = 'La recherche par adresse est indisponible dans cette version.';
+      return;
+    }
     var button = event.currentTarget.querySelector('button[type="submit"]');
     var params = new URLSearchParams(new FormData(event.currentTarget));
     button.disabled = true;
@@ -650,6 +635,10 @@ footer{border-top:1px solid var(--line);padding-block:32px;font-size:.92rem;colo
     results.replaceChildren();
     try {
       var response = await fetch('./api/recherche?' + params);
+      if (!(response.headers.get('content-type') || '').includes('application/json')) {
+        $('static-search').hidden = false;
+        throw new Error('Le service de recherche est momentanément indisponible.');
+      }
       var payload = await response.json();
       if (!response.ok) throw new Error(payload.erreur);
       if (payload.fiches) {
@@ -758,8 +747,9 @@ footer{border-top:1px solid var(--line);padding-block:32px;font-size:.92rem;colo
   var LABEL = { ok: 'Vérifié', warn: 'À vérifier', miss: 'Introuvable' };
   var count = { ok: 0, warn: 0, miss: 0 };
   var html = '';
-  REPORT.forEach(function (sec) {
-    html += '<div class="rep-sec"><h3>' + sec.t + '</h3><dl>';
+  REPORT.forEach(function (sec, index) {
+    var category = ['foncier', 'foncier', 'municipal', 'municipal', 'autres', 'autres'][index];
+    html += '<div class="rep-sec" data-category="' + category + '"><h3>' + sec.t + '</h3><dl>';
     sec.rows.forEach(function (r) {
       count[r[3]]++;
       html += '<div class="r"><dt>' + r[0] + '</dt><dd><span class="mono">' + r[1] + '</span><small>' + r[2] +
@@ -768,6 +758,19 @@ footer{border-top:1px solid var(--line);padding-block:32px;font-size:.92rem;colo
     html += '</dl></div>';
   });
   $('report').innerHTML = html;
+  var filters = document.querySelectorAll('[data-report-filter]');
+  var reportSections = $('report').querySelectorAll('[data-category]');
+  filters.forEach(function (button) {
+    button.addEventListener('click', function () {
+      var chosen = button.dataset.reportFilter;
+      filters.forEach(function (filter) {
+        filter.setAttribute('aria-pressed', String(filter === button));
+      });
+      reportSections.forEach(function (section) {
+        section.hidden = chosen !== 'all' && section.dataset.category !== chosen;
+      });
+    });
+  });
   $('tally').innerHTML =
     '<div><b>' + count.ok + '</b><span class="chip ok">Vérifié</span></div>' +
     '<div><b>' + count.warn + '</b><span class="chip warn">À vérifier</span></div>' +
