@@ -117,7 +117,41 @@ def lookup_matrix(database, address, sector):
             "fiches": matches}
 
 
-def handler_for(datasets, database=None, matrix_database=None):
+def load_regional_export(path):
+    bundle = json.loads(path.read_text(encoding="utf-8"))
+    indexed = {}
+    coverage = {scope["id"]: scope for scope in bundle["couverture"]}
+    for row in bundle["annonces"]:
+        indexed.setdefault(normalize(row["adresse"]), []).append(row)
+    return indexed, coverage
+
+
+def lookup_regional(dataset, address, sector):
+    key = normalize(address)
+    if not re.match(r"^\d+.* [a-z]", key):
+        raise ValueError("Indiquez le numéro civique et le nom de la rue.")
+    area = normalize(sector)
+    index, scope = dataset
+    rows = [row for row in index.get(key, [])
+            if not area or area in (normalize(row["secteur"]), normalize(row["territoire"]))]
+    groups = {}
+    for row in rows:
+        lot = scope[row["lot"]]
+        group = groups.setdefault(row["lot"], {
+            "region": lot["territoire"], "statut": lot["filtre"], "du": lot["du"],
+            "au": lot["au"], "extraction": lot["date_extraction"], "resultats": []
+        })
+        group["resultats"].append({
+            "numero": row["no_centris"], "adresse": row["adresse"], "secteur": row["secteur"],
+            "prix": row["prix_affiche"], "loyer": row["loyer_affiche"], "statut": row["statut"],
+            "genre": row["genre"], "terrain": row["terrain_metrique"] or row["terrain_imperial"]
+        })
+    for group in groups.values():
+        group["total"] = len(group["resultats"])
+    return {"groupes": list(groups.values()), "partiel": True}
+
+
+def handler_for(datasets, database=None, matrix_database=None, regional=None):
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, format_string, *args):
             # Ne pas journaliser les adresses recherchées.
@@ -150,7 +184,9 @@ def handler_for(datasets, database=None, matrix_database=None):
                 self.send_json(400, {"erreur": "L’adresse ou le secteur est trop long."})
                 return
             try:
-                if matrix_database is not None:
+                if regional is not None:
+                    self.send_json(200, lookup_regional(regional, address, sector))
+                elif matrix_database is not None:
                     self.send_json(200, lookup_matrix(matrix_database, address, sector))
                 elif database is not None:
                     postal = params.get("code_postal", [""])[0]
@@ -169,16 +205,18 @@ if __name__ == "__main__":
     sources = parser.add_mutually_exclusive_group()
     sources.add_argument("--base", type=Path)
     sources.add_argument("--matrix", type=Path)
+    sources.add_argument("--export-regional", type=Path)
     parser.add_argument("--historique", type=Path)
     parser.add_argument("--port", type=int, default=8765)
     options = parser.parse_args()
     database = options.base or options.matrix
-    if not database and not (options.actives and options.historique):
+    if not (database or options.export_regional) and not (options.actives and options.historique):
         parser.error("Indiquez --base, --matrix ou les deux exports --actives et --historique.")
     if database and not database.is_file():
         parser.error("Importez d’abord un lot dans la base.")
-    datasets = [] if database else [
+    regional = load_regional_export(options.export_regional) if options.export_regional else None
+    datasets = [] if database or regional else [
         load_dataset(options.actives, False), load_dataset(options.historique, True)]
-    with ThreadingHTTPServer(("127.0.0.1", options.port), handler_for(datasets, options.base, options.matrix)) as server:
+    with ThreadingHTTPServer(("127.0.0.1", options.port), handler_for(datasets, options.base, options.matrix, regional)) as server:
         print(f"Ouvre http://127.0.0.1:{server.server_port}/", flush=True)
         server.serve_forever()

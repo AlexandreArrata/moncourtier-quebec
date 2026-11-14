@@ -240,7 +240,7 @@ footer{border-top:1px solid var(--line);padding-block:32px;font-size:.92rem;colo
       <div class="hero-copy">
         <p class="eyebrow">Pour les courtiers immobiliers du Québec</p>
         <h1>Tout ce que les registres disent d'une adresse, dans un seul relevé.</h1>
-        <p class="lead">Consultez les inscriptions et l’historique disponibles pour une adresse à Laval.</p>
+        <p class="lead">Consultez les inscriptions et l’historique disponibles pour une adresse dans les exports Matrix disponibles.</p>
         <form class="search" id="search">
           <label for="adresse">Numéro civique et rue</label>
           <div class="search-row">
@@ -669,7 +669,7 @@ footer{border-top:1px solid var(--line);padding-block:32px;font-size:.92rem;colo
       for (var group of payload.groupes) {
         total += group.total;
         var heading = document.createElement('h3');
-        heading.textContent = group.statut === 'En vigueur' ? 'Inscriptions actives' : 'Historique disponible';
+        heading.textContent = group.statut + ' · ' + group.region;
         var coverage = document.createElement('p');
         coverage.textContent = 'Matrix Centris · ' + group.region +
           (group.du ? ' · du ' + group.du + ' au ' + group.au : ' · export du ' + group.extraction);
@@ -678,7 +678,10 @@ footer{border-top:1px solid var(--line);padding-block:32px;font-size:.92rem;colo
           var item = document.createElement('li');
           item.textContent = listing.adresse + ', ' + listing.secteur + ' · Centris ' + listing.numero +
             (listing.prix ? ' · ' + listing.prix : '') +
-            (listing.loyer ? ' · ' + listing.loyer + ' / mois' : '');
+            (listing.loyer ? ' · ' + listing.loyer + ' / mois' : '') +
+            (listing.statut ? ' · Statut Matrix ' + listing.statut : '') +
+            (listing.genre ? ' · Type ' + listing.genre : '') +
+            (listing.terrain ? ' · Terrain ' + listing.terrain : '');
           list.append(item);
         }
         var summary = document.createElement('p');
@@ -686,7 +689,8 @@ footer{border-top:1px solid var(--line);padding-block:32px;font-size:.92rem;colo
           'Aucun résultat dans cet export.';
         results.append(heading, coverage, list, summary);
       }
-      status.textContent = total + (total === 1 ? ' fiche trouvée.' : ' fiches trouvées.');
+      status.textContent = total + (total === 1 ? ' fiche trouvée.' : ' fiches trouvées.') +
+        (payload.partiel ? ' Recherche dans des exports partiels. Les prix affichés reprennent les colonnes du tableau Matrix.' : '');
     } catch (error) {
       status.textContent = error instanceof SyntaxError ? 'Service de recherche indisponible.' :
         error.message || 'Service de recherche indisponible.';
