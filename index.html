@@ -242,7 +242,7 @@ footer{border-top:1px solid var(--line);padding-block:32px;font-size:.92rem;colo
         <h1>Tout ce que les registres disent d'une adresse, dans un seul relevé.</h1>
         <p class="lead">Consultez les inscriptions et l’historique disponibles pour une adresse dans les exports Matrix disponibles.</p>
         <form class="search" id="search">
-          <label for="adresse">Numéro civique et rue</label>
+          <label for="adresse">Adresse</label>
           <div class="search-row">
             <input type="text" id="adresse" name="adresse" autocomplete="street-address" placeholder="2054, rue Gosselin" required maxlength="160">
             <button class="btn btn-primary" type="submit">Rechercher</button>
@@ -618,6 +618,27 @@ footer{border-top:1px solid var(--line);padding-block:32px;font-size:.92rem;colo
   }
   window.addEventListener('hashchange', route);
 
+  function documentRequest(number, address) {
+    var subject = 'Demande de documents — Centris ' + number;
+    var body = [
+      'Bonjour,',
+      '',
+      'Je souhaite demander les documents disponibles pour cette propriété.',
+      'Adresse : ' + address,
+      'Numéro Centris : ' + number,
+      '',
+      'Pouvez-vous m’indiquer comment obtenir la déclaration du vendeur, le certificat de localisation ou les autres pièces pertinentes?',
+      '',
+      'Merci.'
+    ].join('\r\n');
+    var link = document.createElement('a');
+    link.href = 'mailto:info@alexandrearrata.com?subject=' + encodeURIComponent(subject) +
+      '&body=' + encodeURIComponent(body);
+    link.textContent = 'Demander les documents';
+    link.setAttribute('aria-label', 'Demander les documents de la fiche Centris ' + number);
+    return link;
+  }
+
   $('search').addEventListener('submit', async function (event) {
     event.preventDefault();
     var status = $('recherche-etat');
@@ -647,7 +668,7 @@ footer{border-top:1px solid var(--line);padding-block:32px;font-size:.92rem;colo
         for (var fiche of payload.fiches) {
           var title = document.createElement('h3');
           title.textContent = 'Centris ' + fiche.numero;
-          results.append(title);
+          results.append(title, documentRequest(fiche.numero, params.get('adresse')));
           for (var version of fiche.versions.slice().reverse()) {
             var section = document.createElement('details');
             var caption = document.createElement('summary');
@@ -682,6 +703,9 @@ footer{border-top:1px solid var(--line);padding-block:32px;font-size:.92rem;colo
             (listing.statut ? ' · Statut Matrix ' + listing.statut : '') +
             (listing.genre ? ' · Type ' + listing.genre : '') +
             (listing.terrain ? ' · Terrain ' + listing.terrain : '');
+          var request = document.createElement('div');
+          request.append(documentRequest(listing.numero, listing.adresse + ', ' + listing.secteur));
+          item.append(request);
           list.append(item);
         }
         var summary = document.createElement('p');

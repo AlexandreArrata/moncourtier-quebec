@@ -128,10 +128,10 @@ def load_regional_export(path):
 
 def lookup_regional(dataset, address, sector):
     key = normalize(address)
-    if not re.match(r"^\d+.* [a-z]", key):
-        raise ValueError("Indiquez le numéro civique et le nom de la rue.")
     area = normalize(sector)
     index, scope = dataset
+    if not key or (not area and not re.match(r"^\d+.* [a-z]", key)):
+        raise ValueError("Indiquez le numéro civique et la rue, ou la rue et le secteur.")
     rows = [row for row in index.get(key, [])
             if not area or area in (normalize(row["secteur"]), normalize(row["territoire"]))]
     groups = {}
