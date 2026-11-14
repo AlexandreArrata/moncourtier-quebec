@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="fr-CA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="moncourtier.québec rassemble le registre foncier, les rôles d'évaluation, le cadastre et les cartes de risques dans un seul relevé de propriété pour les courtiers immobiliers du Québec.">
+<meta name="robots" content="noindex">
+<title>moncourtier.québec</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout : une feuille de plan cadastral. Colonne de 1120 px, grille à deux volets dans le héros,
+   données en chasse fixe comme sur un relevé officiel, une seule couleur d'accent (vert d'arpentage). */
+:root{
+  --bg:#F3F6F2; --surface:#FFFFFF; --surface-2:#E8EEE8; --ink:#10231C; --muted:#56675F; --line:#D3DCD5;
+  --accent:#0B6A4E; --accent-ink:#FFFFFF; --accent-soft:#DCEFE6;
+  --flag:#8F5508; --flag-soft:#FBEBCB; --bad:#A3362B; --bad-soft:#F8DEDA;
+  --display:"Bricolage Grotesque","Avenir Next","Segoe UI",sans-serif;
+  --body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D1613; --surface:#14211C; --surface-2:#1B2B25; --ink:#E6EEE9; --muted:#9DB0A6; --line:#2B3D35;
+    --accent:#4CC79A; --accent-ink:#06231A; --accent-soft:#143328;
+    --flag:#F0B955; --flag-soft:#3A2C10; --bad:#F0958A; --bad-soft:#3B1C18; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D1613; --surface:#14211C; --surface-2:#1B2B25; --ink:#E6EEE9; --muted:#9DB0A6; --line:#2B3D35;
+  --accent:#4CC79A; --accent-ink:#06231A; --accent-soft:#143328;
+  --flag:#F0B955; --flag-soft:#3A2C10; --bad:#F0958A; --bad-soft:#3B1C18; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1120px;margin-inline:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);line-height:1.08;margin:0;text-wrap:balance;letter-spacing:-0.01em}
+h1{font-size:clamp(2.1rem,5.2vw,3.6rem);font-weight:700}
+h2{font-size:clamp(1.6rem,3.4vw,2.3rem);font-weight:700}
+h3{font-size:1.15rem;font-weight:600;line-height:1.25}
+p{margin:0}
+a{color:var(--accent)}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-family:var(--mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lead{font-size:1.125rem;color:var(--muted);max-width:60ch}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
+[tabindex="-1"]:focus{outline:none}
+
+/* bandeau maquette */
+.mock{background:var(--flag-soft);color:var(--flag);font-size:.85rem;border-bottom:1px solid var(--line)}
+.mock .wrap{padding-block:6px}
+
+/* en-tête */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bg);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:20px;padding-block:10px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-family:var(--display);font-weight:700;font-size:1.35rem;min-height:44px}
+.brand svg{width:30px;height:30px;flex:none}
+.brand .tld{color:var(--accent)}
+.nav{display:flex;gap:4px;margin-left:auto}
+.nav a{color:var(--ink);text-decoration:none;padding:10px 12px;border-radius:8px;font-size:.95rem;min-height:44px;display:flex;align-items:center}
+.nav a:hover{background:var(--surface-2)}
+.acts{display:flex;gap:8px;align-items:center}
+@media (max-width:860px){.nav{display:none}.acts{margin-left:auto}}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 18px;border-radius:8px;border:1px solid transparent;font:600 1rem var(--body);cursor:pointer;text-decoration:none;white-space:nowrap}
+.btn-primary{background:var(--accent);color:var(--accent-ink)}
+.btn-primary:hover{filter:brightness(1.08)}
+.btn-ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn-ghost:hover{background:var(--surface-2)}
+.btn-link{background:none;border:0;color:var(--accent);font:500 1rem var(--body);cursor:pointer;min-height:44px;padding:0 4px;text-decoration:underline}
+@media (max-width:560px){.acts .btn-ghost{display:none}.brand{font-size:1.02rem;gap:7px}.brand svg{width:24px;height:24px}.acts .btn{padding:10px 10px;font-size:.86rem}.top .wrap{gap:8px}}
+@media (max-width:480px){.search-row .btn,.price .btn{white-space:normal}}
+@media (max-width:380px){.brand .tld{display:none}}
+
+section{padding-block:clamp(40px,7vw,84px)}
+.head{display:grid;gap:12px;margin-bottom:28px}
+
+/* héros */
+.hero{padding-block:clamp(28px,5vw,64px)}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:clamp(24px,4vw,56px);align-items:center}
+@media (max-width:900px){.hero-grid{grid-template-columns:minmax(0,1fr)}}
+.hero-copy{display:grid;gap:20px}
+.search{display:grid;gap:8px}
+.search label{font-weight:600}
+.search-row{display:flex;gap:8px;flex-wrap:wrap}
+.search-row input{flex:1 1 240px;min-width:0}
+input[type=text],input[type=email],input[type=password],input[type=tel],select{
+  width:100%;min-height:48px;padding:10px 14px;border:1px solid var(--muted);border-radius:8px;background:var(--surface);color:var(--ink);font:400 1rem var(--body)}
+input::placeholder{color:var(--muted);opacity:1}
+.hint{font-size:.9rem;color:var(--muted)}
+
+/* feuille de relevé */
+.sheet{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.sheet-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:16px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.sheet-head strong{font-family:var(--display);font-size:1.1rem;display:block;line-height:1.25}
+.plan{display:block;width:100%;height:auto;background:var(--surface-2);border-bottom:1px solid var(--line)}
+.plan .nb{fill:none;stroke:var(--line);stroke-width:1.5}
+.plan .road{fill:var(--surface);stroke:none}
+.plan .lot{fill:var(--accent-soft);stroke:var(--accent);stroke-width:2.5}
+.plan .pt{fill:var(--accent)}
+.plan text{font-family:var(--mono);font-size:11px;fill:var(--muted)}
+.plan .lot-t{fill:var(--accent);font-weight:500}
+.rows{list-style:none;margin:0;padding:0}
+.rows li{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:11px 18px;border-bottom:1px solid var(--line);font-size:.95rem}
+.rows li:last-child{border-bottom:0}
+.rows span:first-child{min-width:0}
+.chip{flex:none;font-family:var(--mono);font-size:.74rem;letter-spacing:.03em;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.ok{background:var(--accent-soft);color:var(--accent)}
+.warn{background:var(--flag-soft);color:var(--flag)}
+.miss{background:var(--bad-soft);color:var(--bad)}
+.tag-ex{display:inline-block;font-family:var(--mono);font-size:.74rem;color:var(--flag);background:var(--flag-soft);padding:3px 10px;border-radius:12px;max-width:100%}
+
+/* sources */
+.sources{border-block:1px solid var(--line);padding-block:22px}
+.sources ul{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:8px 10px}
+.sources li{font-family:var(--mono);font-size:.84rem;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface)}
+
+/* étapes */
+.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);counter-reset:s}
+.steps li{padding:24px;display:grid;gap:8px;align-content:start;border-left:1px solid var(--line);counter-increment:s}
+.steps li:first-child{border-left:0}
+.steps li::before{content:"Étape " counter(s);font-family:var(--mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.steps p{color:var(--muted)}
+@media (max-width:760px){.steps{grid-template-columns:minmax(0,1fr)}.steps li{border-left:0;border-top:1px solid var(--line)}.steps li:first-child{border-top:0}}
+
+/* contenu du relevé */
+.toc{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 40px}
+@media (max-width:760px){.toc{grid-template-columns:minmax(0,1fr)}}
+.toc div{padding:18px 0;border-top:1px solid var(--line);display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 16px}
+.toc .n{font-family:var(--mono);color:var(--muted);font-size:.9rem;padding-top:3px}
+.toc p{grid-column:2;color:var(--muted)}
+
+/* profils */
+.who{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+@media (max-width:760px){.who{grid-template-columns:minmax(0,1fr)}}
+.who article{border-left:3px solid var(--accent);padding:4px 0 4px 18px;display:grid;gap:8px}
+.who p{color:var(--muted)}
+
+/* tarifs */
+.band{background:var(--surface-2)}
+.prices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+@media (max-width:860px){.prices{grid-template-columns:minmax(0,1fr)}}
+.price{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:24px;display:grid;gap:12px;align-content:start}
+.price.best{border-color:var(--accent);border-width:2px}
+.amount{font-family:var(--display);font-size:2.4rem;font-weight:700;line-height:1}
+.amount small{font:400 .95rem var(--body);color:var(--muted)}
+.price p{color:var(--muted)}
+.price .btn{margin-top:6px}
+
+/* faq */
+.faq{max-width:760px}
+.faq details{border-top:1px solid var(--line)}
+.faq details:last-child{border-bottom:1px solid var(--line)}
+.faq summary{cursor:pointer;padding:16px 0;font-weight:600;min-height:44px;list-style-position:outside;margin-left:1.2em}
+.faq p{padding:0 0 18px 1.2em;color:var(--muted);max-width:65ch}
+
+.cta-end{display:grid;gap:18px;justify-items:start}
+
+/* vues secondaires */
+.narrow{max-width:520px;margin-inline:auto}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:clamp(20px,4vw,32px);display:grid;gap:20px}
+form{display:grid;gap:18px}
+.field{display:grid;gap:6px}
+.field label{font-weight:600}
+.field .opt{font-weight:400;color:var(--muted)}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media (max-width:480px){.two{grid-template-columns:minmax(0,1fr)}}
+.pw{position:relative}
+.pw input{padding-right:104px}
+.pw button{position:absolute;right:4px;top:2px;height:44px;min-width:92px;background:none;border:0;color:var(--accent);font:500 .9rem var(--body);cursor:pointer;border-radius:6px}
+.err{color:var(--bad);font-size:.9rem}
+input[aria-invalid="true"],select[aria-invalid="true"]{border-color:var(--bad);border-width:2px}
+.check{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start}
+.check input{width:22px;height:22px;margin-top:2px;accent-color:var(--accent)}
+.progress{font-family:var(--mono);font-size:.8rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.notice{background:var(--flag-soft);color:var(--flag);border-radius:8px;padding:14px 16px}
+.alt{color:var(--muted)}
+
+/* exemple de relevé */
+.rep-head{display:grid;gap:10px;margin-bottom:20px}
+.rep-meta{display:flex;flex-wrap:wrap;gap:8px 20px;color:var(--muted);font-size:.9rem}
+.tally{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0 26px}
+.tally div{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 16px;display:flex;gap:10px;align-items:baseline}
+.tally b{font-family:var(--display);font-size:1.5rem}
+.rep-grid{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:860px){.rep-grid{grid-template-columns:minmax(0,1fr)}}
+.rep-sec{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);margin-bottom:16px;overflow:hidden}
+.rep-sec h3{padding:14px 18px;border-bottom:1px solid var(--line);background:var(--surface-2)}
+.rep-sec dl{margin:0}
+.rep-sec .r{display:grid;grid-template-columns:minmax(0,170px) minmax(0,1fr) auto;gap:6px 14px;padding:12px 18px;border-bottom:1px solid var(--line);align-items:start;font-size:.95rem}
+.rep-sec .r:last-child{border-bottom:0}
+.rep-sec dt{color:var(--muted)}
+.rep-sec dd{margin:0;min-width:0}
+.rep-sec dd small{display:block;color:var(--muted);font-size:.85rem;margin-top:2px}
+@media (max-width:560px){.rep-sec .r{grid-template-columns:minmax(0,1fr) auto}.rep-sec dt{grid-column:1 / -1}}
+
+footer{border-top:1px solid var(--line);padding-block:32px;font-size:.92rem;color:var(--muted)}
+.foot{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr);gap:24px}
+@media (max-width:760px){.foot{grid-template-columns:minmax(0,1fr)}}
+.foot h3{font-family:var(--mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500;margin-bottom:8px}
+.foot ul{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.foot a{color:var(--ink);text-decoration:none;display:inline-flex;min-height:36px;align-items:center}
+.foot a:hover{text-decoration:underline}
+.soon{font-family:var(--mono);font-size:.72rem;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:1px 8px;margin-left:8px}
+</style>
+</head>
+<body>
+
+<div class="mock"><div class="wrap">Maquette de travail : textes et tarifs provisoires. Aucune donnée réelle, aucun compte créé.</div></div>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#accueil" aria-label="moncourtier.québec, accueil">
+      <svg viewBox="0 0 30 30" aria-hidden="true"><path d="M4 8 L22 4 L26 22 L7 26 Z" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2.2" stroke-linejoin="round"/><circle cx="22" cy="4" r="3" fill="var(--accent)"/></svg>
+      <span>moncourtier<span class="tld">.québec</span></span>
+    </a>
+    <nav class="nav" aria-label="Sections">
+      <a href="#fonctionnement">Fonctionnement</a>
+      <a href="#contenu">Contenu du relevé</a>
+      <a href="#tarifs">Tarifs</a>
+      <a href="#faq">Questions</a>
+    </nav>
+    <div class="acts">
+      <a class="btn btn-ghost" href="#connexion">Connexion</a>
+      <a class="btn btn-primary" href="#inscription">Créer un compte</a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- ACCUEIL -->
+<div id="view-accueil">
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <p class="eyebrow">Pour les courtiers immobiliers du Québec</p>
+        <h1>Tout ce que les registres disent d'une adresse, dans un seul relevé.</h1>
+        <p class="lead">Entrez une adresse. Nous interrogeons le registre foncier, les rôles d'évaluation municipaux, le cadastre, Centris et les cartes de risques, puis nous vous remettons un dossier clair avec les points à revérifier.</p>
+        <form class="search" id="search" novalidate>
+          <label for="adresse">Adresse de la propriété</label>
+          <div class="search-row">
+            <input type="text" id="adresse" name="adresse" autocomplete="street-address" placeholder="ex. 1234, rue des Érables, Laval">
+            <button class="btn btn-primary" type="submit">Voir un exemple de relevé</button>
+          </div>
+          <p class="hint">La recherche réelle n'est pas encore branchée. Le bouton ouvre un relevé fictif.</p>
+        </form>
+      </div>
+
+      <div class="sheet" aria-label="Aperçu d'un relevé fictif">
+        <div class="sheet-head">
+          <div>
+            <strong>1234, rue des Érables, Laval</strong>
+            <span class="mono hint">Lot 9 876 543 · Cadastre du Québec</span>
+          </div>
+          <span class="tag-ex">Exemple fictif</span>
+        </div>
+        <svg class="plan" viewBox="0 0 440 190" role="img" aria-label="Plan du lot et des lots voisins">
+          <rect class="road" x="0" y="150" width="440" height="40"/>
+          <text x="16" y="175">RUE DES ÉRABLES</text>
+          <path class="nb" d="M20 150 L28 30 L120 24 L124 150 Z"/>
+          <path class="nb" d="M222 150 L226 20 L318 16 L326 150 Z"/>
+          <path class="nb" d="M326 150 L318 16 L420 12 L424 150 Z"/>
+          <path class="lot" d="M124 150 L120 24 L226 20 L222 150 Z"/>
+          <circle class="pt" cx="120" cy="24" r="4"/><circle class="pt" cx="226" cy="20" r="4"/>
+          <circle class="pt" cx="124" cy="150" r="4"/><circle class="pt" cx="222" cy="150" r="4"/>
+          <text class="lot-t" x="136" y="84">9 876 543</text>
+          <text x="136" y="100">557,4 m²</text>
+          <text x="150" y="142">15,24 m</text>
+          <text x="44" y="92">…542</text><text x="250" y="88">…544</text><text x="348" y="84">…545</text>
+        </svg>
+        <ul class="rows">
+          <li><span>Registre foncier : titres et hypothèques</span><span class="chip ok">Vérifié</span></li>
+          <li><span>Rôle d'évaluation et taxes</span><span class="chip ok">Vérifié</span></li>
+          <li><span>Servitude à l'arrière du lot</span><span class="chip warn">À vérifier</span></li>
+          <li><span>Zone inondable</span><span class="chip ok">Vérifié</span></li>
+          <li><span>Certificat de localisation</span><span class="chip miss">Introuvable</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <div class="sources">
+      <p class="eyebrow">Sources prévues</p>
+      <ul>
+        <li>Registre foncier du Québec</li>
+        <li>Rôles d'évaluation des municipalités</li>
+        <li>Centris</li>
+        <li>Cadastre du Québec</li>
+        <li>Zonage municipal</li>
+        <li>Zones inondables</li>
+        <li>Répertoire des terrains contaminés</li>
+        <li>Taxes municipales et scolaires</li>
+      </ul>
+    </div>
+  </div>
+
+  <section id="fonctionnement">
+    <div class="wrap">
+      <div class="head">
+        <h2>De l'adresse au dossier en trois étapes</h2>
+        <p class="lead">Vous n'ouvrez plus six portails gouvernementaux et municipaux pour une seule propriété.</p>
+      </div>
+      <ol class="steps">
+        <li><h3>Vous entrez l'adresse</h3><p>Nous retrouvons le lot et vous demandons de confirmer que c'est le bon avant d'aller plus loin.</p></li>
+        <li><h3>Nous consultons les sources</h3><p>Chaque registre est interrogé et chaque renseignement garde la trace de sa source et de sa date.</p></li>
+        <li><h3>Vous recevez le relevé</h3><p>Un PDF à votre nom, les documents sources en pièces jointes, et la liste de ce qui reste à valider.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="contenu" class="band">
+    <div class="wrap">
+      <div class="head">
+        <h2>Ce que contient un relevé</h2>
+        <p class="lead">Chaque ligne porte un statut : vérifié, à vérifier ou introuvable. Rien n'est laissé en blanc sans explication.</p>
+      </div>
+      <div class="toc">
+        <div><span class="n">A</span><h3>Identification du lot</h3><p>Numéro de lot, dimensions, superficie, circonscription foncière et matricule.</p></div>
+        <div><span class="n">B</span><h3>Propriétaires et titres</h3><p>Propriétaires inscrits, mode et date d'acquisition, chaîne des derniers actes.</p></div>
+        <div><span class="n">C</span><h3>Charges et servitudes</h3><p>Hypothèques, servitudes, préavis et autres inscriptions publiées contre le lot.</p></div>
+        <div><span class="n">D</span><h3>Évaluation et taxes</h3><p>Valeur du terrain et du bâtiment au rôle en vigueur, taxes municipales et scolaires.</p></div>
+        <div><span class="n">E</span><h3>Zonage et usages</h3><p>Zone, usages permis et écarts visibles entre l'usage déclaré et l'usage autorisé.</p></div>
+        <div><span class="n">F</span><h3>Risques</h3><p>Zones inondables cartographiées et inscriptions au répertoire des terrains contaminés.</p></div>
+        <div><span class="n">G</span><h3>Historique de marché</h3><p>Inscriptions antérieures, prix demandés et prix vendus tirés de Centris.</p></div>
+        <div><span class="n">H</span><h3>Pièces jointes</h3><p>Actes, comptes de taxes et fiches du rôle, prêts à verser à votre dossier de courtage.</p></div>
+      </div>
+      <p style="margin-top:28px"><a class="btn btn-ghost" href="#exemple">Ouvrir l'exemple complet</a></p>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="head"><h2>Utile des deux côtés de la transaction</h2></div>
+      <div class="who">
+        <article><h3>Vous inscrivez la propriété</h3><p>Arrivez chez le vendeur avec le portrait du lot déjà en main, puis remplissez le contrat de courtage et les déclarations du vendeur sans chercher l'information deux fois.</p></article>
+        <article><h3>Vous représentez l'acheteur</h3><p>Avant de rédiger la promesse d'achat, sachez ce qui est publié contre l'immeuble et quelles conditions méritent d'être ajoutées.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section id="tarifs" class="band">
+    <div class="wrap">
+      <div class="head">
+        <h2>Payez au relevé, sans abonnement</h2>
+        <p class="lead">Tarifs d'exemple, taxes en sus. Les montants définitifs restent à fixer.</p>
+      </div>
+      <div class="prices">
+        <div class="price">
+          <h3>À l'unité</h3>
+          <p class="amount">59 $ <small>par relevé</small></p>
+          <p>Pour un dossier ponctuel. Aucun engagement.</p>
+          <a class="btn btn-ghost" href="#inscription">Commencer</a>
+        </div>
+        <div class="price best">
+          <h3>Carnet de 10</h3>
+          <p class="amount">52 $ <small>par relevé</small></p>
+          <p>520 $ pour 10 relevés, soit 70 $ de moins qu'à l'unité. Les relevés n'expirent pas.</p>
+          <a class="btn btn-primary" href="#inscription">Choisir le carnet</a>
+        </div>
+        <div class="price">
+          <h3>Agences</h3>
+          <p class="amount">Sur mesure</p>
+          <p>Facturation centralisée, comptes pour l'équipe et tarif selon le volume.</p>
+          <a class="btn btn-ghost" href="#inscription">Ouvrir un compte d'agence</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="wrap">
+      <div class="head"><h2>Questions fréquentes</h2></div>
+      <div class="faq">
+        <details><summary>Le relevé remplace-t-il mes propres vérifications ?</summary><p>Non. Il rassemble et organise ce que les sources publiques contiennent. Votre jugement professionnel et vos obligations de vérification restent entiers.</p></details>
+        <details><summary>D'où viennent les renseignements ?</summary><p>Du registre foncier, des rôles d'évaluation municipaux, du cadastre, de Centris et des cartes de zones inondables. Chaque ligne du relevé indique sa source et la date de consultation.</p></details>
+        <details><summary>Que se passe-t-il si une information est introuvable ?</summary><p>La ligne est marquée « Introuvable » avec une suggestion sur la façon de l'obtenir, par exemple auprès du vendeur ou de la municipalité.</p></details>
+        <details><summary>Qui peut ouvrir un compte ?</summary><p>Les courtiers immobiliers titulaires d'un permis de l'OACIQ et le personnel d'agence qui travaille sous leur supervision.</p></details>
+        <details><summary>Puis-je remettre le relevé à mon client ?</summary><p>Oui. Le PDF est à votre nom et peut être versé à votre dossier de courtage avec ses pièces jointes.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap cta-end">
+      <h2>Voyez d'abord un relevé complet.</h2>
+      <p class="lead">L'exemple est fictif, mais il montre exactement la forme du dossier que vous remettrez à votre client.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <a class="btn btn-primary" href="#exemple">Ouvrir l'exemple</a>
+        <a class="btn btn-ghost" href="#inscription">Créer un compte</a>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- EXEMPLE DE RELEVÉ -->
+<div id="view-exemple" hidden>
+  <section>
+    <div class="wrap">
+      <div class="rep-head">
+        <p><a href="#accueil">← Retour à l'accueil</a></p>
+        <p><span class="tag-ex">Exemple fictif : propriété, noms et montants inventés</span></p>
+        <h1 style="font-size:clamp(1.7rem,4vw,2.6rem)">1234, rue des Érables, Laval (Québec)</h1>
+        <div class="rep-meta mono">
+          <span>Lot 9 876 543</span><span>Cadastre du Québec</span><span>Relevé produit le 14 novembre 2026</span>
+        </div>
+      </div>
+      <div class="tally" id="tally" aria-label="Sommaire des statuts"></div>
+      <div class="rep-grid">
+        <div class="sheet">
+          <svg class="plan" viewBox="0 0 440 190" role="img" aria-label="Plan du lot et des lots voisins">
+            <rect class="road" x="0" y="150" width="440" height="40"/>
+            <text x="16" y="175">RUE DES ÉRABLES</text>
+            <path class="nb" d="M20 150 L28 30 L120 24 L124 150 Z"/>
+            <path class="nb" d="M222 150 L226 20 L318 16 L326 150 Z"/>
+            <path class="nb" d="M326 150 L318 16 L420 12 L424 150 Z"/>
+            <path class="lot" d="M124 150 L120 24 L226 20 L222 150 Z"/>
+            <circle class="pt" cx="120" cy="24" r="4"/><circle class="pt" cx="226" cy="20" r="4"/>
+            <circle class="pt" cx="124" cy="150" r="4"/><circle class="pt" cx="222" cy="150" r="4"/>
+            <text class="lot-t" x="136" y="84">9 876 543</text>
+            <text x="136" y="100">557,4 m²</text>
+            <text x="150" y="142">15,24 m</text>
+          </svg>
+          <ul class="rows">
+            <li><span>Façade</span><span class="mono">15,24 m</span></li>
+            <li><span>Profondeur</span><span class="mono">36,58 m</span></li>
+            <li><span>Superficie</span><span class="mono">557,4 m²</span></li>
+          </ul>
+        </div>
+        <div id="report"></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- INSCRIPTION -->
+<div id="view-inscription" hidden>
+  <section>
+    <div class="wrap narrow">
+      <div class="panel">
+        <div style="display:grid;gap:8px">
+          <p class="progress" id="su-progress">Étape 1 de 2</p>
+          <h1 style="font-size:1.9rem" id="su-title">Créer un compte courtier</h1>
+          <p class="alt" id="su-sub">Commencez avec votre courriel. Le reste prend une minute.</p>
+        </div>
+
+        <form id="su-1" novalidate>
+          <div class="field">
+            <label for="su-email">Courriel professionnel</label>
+            <input type="email" id="su-email" name="email" autocomplete="email" inputmode="email" aria-describedby="su-email-err">
+            <p class="err" id="su-email-err" role="alert" hidden></p>
+          </div>
+          <div class="field">
+            <label for="su-pw">Mot de passe</label>
+            <div class="pw">
+              <input type="password" id="su-pw" name="new-password" autocomplete="new-password" aria-describedby="su-pw-hint su-pw-err">
+              <button type="button" data-toggle="su-pw" aria-pressed="false">Afficher</button>
+            </div>
+            <p class="hint" id="su-pw-hint">Au moins 12 caractères. Une phrase facile à retenir fait très bien l'affaire.</p>
+            <p class="err" id="su-pw-err" role="alert" hidden></p>
+          </div>
+          <button class="btn btn-primary" type="submit">Continuer</button>
+        </form>
+
+        <form id="su-2" novalidate hidden>
+          <div class="two">
+            <div class="field">
+              <label for="su-first">Prénom</label>
+              <input type="text" id="su-first" name="given-name" autocomplete="given-name" aria-describedby="su-first-err">
+              <p class="err" id="su-first-err" role="alert" hidden></p>
+            </div>
+            <div class="field">
+              <label for="su-last">Nom</label>
+              <input type="text" id="su-last" name="family-name" autocomplete="family-name" aria-describedby="su-last-err">
+              <p class="err" id="su-last-err" role="alert" hidden></p>
+            </div>
+          </div>
+          <div class="field">
+            <label for="su-permis">Numéro de permis OACIQ</label>
+            <input type="text" id="su-permis" name="permis" autocomplete="off" autocapitalize="characters" class="mono" placeholder="ex. A1234" aria-describedby="su-permis-hint su-permis-err">
+            <p class="hint" id="su-permis-hint">Une lettre suivie de quatre chiffres. Il sert à confirmer que vous êtes courtier.</p>
+            <p class="err" id="su-permis-err" role="alert" hidden></p>
+          </div>
+          <div class="field">
+            <label for="su-agence">Agence</label>
+            <select id="su-agence" name="agence" autocomplete="organization" aria-describedby="su-agence-err">
+              <option value="">Choisir une agence</option>
+              <option>CENTURY 21</option><option>eXp</option><option>Proprio Direct</option><option>RE/MAX</option>
+              <option>Royal LePage</option><option>Sutton</option><option>Via Capitale</option>
+              <option>Autre bannière ou courtier indépendant</option>
+            </select>
+            <p class="err" id="su-agence-err" role="alert" hidden></p>
+          </div>
+          <div class="field">
+            <label for="su-tel">Téléphone <span class="opt">(facultatif)</span></label>
+            <input type="tel" id="su-tel" name="tel" autocomplete="tel" inputmode="tel" placeholder="514 555-0123" aria-describedby="su-tel-hint">
+            <p class="hint" id="su-tel-hint">Seulement pour vous joindre au sujet d'un relevé en cours.</p>
+          </div>
+          <div class="field">
+            <div class="check">
+              <input type="checkbox" id="su-ok" name="consent" aria-describedby="su-ok-err">
+              <label for="su-ok" style="font-weight:400">J'accepte les conditions d'utilisation et la politique de confidentialité.</label>
+            </div>
+            <p class="err" id="su-ok-err" role="alert" hidden></p>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-ghost" type="button" id="su-back">Retour</button>
+            <button class="btn btn-primary" type="submit">Créer mon compte</button>
+          </div>
+        </form>
+
+        <div id="su-done" hidden>
+          <p class="notice" role="status">Le formulaire est valide. Comme il s'agit d'une maquette, aucun compte n'a été créé et rien n'a été envoyé.</p>
+        </div>
+
+        <p class="alt">Déjà inscrit ? <a href="#connexion">Se connecter</a></p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- CONNEXION -->
+<div id="view-connexion" hidden>
+  <section>
+    <div class="wrap narrow">
+      <div class="panel">
+        <div style="display:grid;gap:8px">
+          <h1 style="font-size:1.9rem">Connexion</h1>
+          <p class="alt">Retrouvez vos relevés et vos crédits.</p>
+        </div>
+        <form id="si" novalidate>
+          <div class="field">
+            <label for="si-email">Courriel</label>
+            <input type="email" id="si-email" name="email" autocomplete="username" inputmode="email" aria-describedby="si-email-err">
+            <p class="err" id="si-email-err" role="alert" hidden></p>
+          </div>
+          <div class="field">
+            <label for="si-pw">Mot de passe</label>
+            <div class="pw">
+              <input type="password" id="si-pw" name="current-password" autocomplete="current-password" aria-describedby="si-pw-err">
+              <button type="button" data-toggle="si-pw" aria-pressed="false">Afficher</button>
+            </div>
+            <p class="err" id="si-pw-err" role="alert" hidden></p>
+          </div>
+          <button class="btn btn-primary" type="submit">Se connecter</button>
+          <button class="btn-link" type="button" id="si-forgot" style="justify-self:start">Mot de passe oublié ?</button>
+        </form>
+        <p class="notice" id="si-note" role="status" hidden></p>
+        <p class="alt">Pas encore de compte ? <a href="#inscription">Créer un compte</a></p>
+      </div>
+    </div>
+  </section>
+</div>
+
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <div>
+      <p style="font-family:var(--display);font-weight:700;font-size:1.2rem;color:var(--ink)">moncourtier.québec</p>
+      <p>Le dossier de propriété des courtiers du Québec.</p>
+      <p style="margin-top:10px">Maquette de travail. Contenus provisoires.</p>
+    </div>
+    <div>
+      <h3>Produit</h3>
+      <ul>
+        <li><a href="#fonctionnement">Fonctionnement</a></li>
+        <li><a href="#contenu">Contenu du relevé</a></li>
+        <li><a href="#tarifs">Tarifs</a></li>
+        <li><a href="#faq">Questions fréquentes</a></li>
+      </ul>
+    </div>
+    <div>
+      <h3>Nos autres outils</h3>
+      <ul>
+        <li>Calculateur d'évaluation municipale<span class="soon">à venir</span></li>
+        <li style="margin-top:8px">Répertoire de courtiers<span class="soon">à venir</span></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var VIEWS = ['accueil', 'exemple', 'inscription', 'connexion'];
+  var $ = function (id) { return document.getElementById(id); };
+
+  /* ---------- navigation par ancre ---------- */
+  function route() {
+    var h = (location.hash || '').replace('#', '');
+    var view = VIEWS.indexOf(h) > 0 ? h : 'accueil';
+    VIEWS.forEach(function (v) { $('view-' + v).hidden = (v !== view); });
+    if (view === 'accueil' && h && h !== 'accueil') {
+      var t = $(h);
+      if (t) { t.scrollIntoView(); return; }
+    }
+    window.scrollTo(0, 0);
+    if (view !== 'accueil') {
+      var h1 = $('view-' + view).querySelector('h1');
+      if (h1) { h1.setAttribute('tabindex', '-1'); h1.focus({ preventScroll: true }); }
+    }
+  }
+  window.addEventListener('hashchange', route);
+
+  $('search').addEventListener('submit', function (e) {
+    e.preventDefault();
+    location.hash = 'exemple';
+  });
+
+  /* ---------- exemple de relevé (données fictives) ---------- */
+  var REPORT = [
+    { t: 'Propriétaires et titres', rows: [
+      ['Propriétaires inscrits', 'Deux copropriétaires indivis', 'Registre foncier, index des immeubles', 'ok'],
+      ['Acquisition', 'Vente, publiée en juin 2017', 'Acte de vente joint au dossier', 'ok']
+    ]},
+    { t: 'Charges et servitudes', rows: [
+      ['Hypothèque', 'Premier rang, institution financière, 2017', 'Aucune quittance publiée', 'ok'],
+      ['Servitude', 'Utilité publique, bande de 1,5 m à l\'arrière', 'À comparer avec le certificat de localisation', 'warn'],
+      ['Préavis d\'exercice', 'Aucun', 'Registre foncier', 'ok']
+    ]},
+    { t: 'Évaluation et taxes', rows: [
+      ['Terrain', '248 000 $', 'Rôle triennal 2025-2027', 'ok'],
+      ['Bâtiment', '312 000 $', 'Rôle triennal 2025-2027', 'ok'],
+      ['Valeur totale', '560 000 $', 'Terrain et bâtiment', 'ok'],
+      ['Taxes municipales 2026', '3 912 $', 'Compte de taxes', 'ok'],
+      ['Taxes scolaires 2026-2027', '412 $', 'Centre de services scolaire', 'ok']
+    ]},
+    { t: 'Zonage et usages', rows: [
+      ['Zone', 'Résidentielle, unifamiliale isolée', 'Règlement de zonage municipal', 'ok'],
+      ['Usage déclaré', 'Unifamiliale avec logement au sous-sol', 'Le logement d\'appoint n\'apparaît pas au rôle', 'warn']
+    ]},
+    { t: 'Historique de marché', rows: [
+      ['Dernière vente', 'Juin 2017, vendue en 21 jours', 'Centris', 'ok'],
+      ['Inscription en vigueur', 'Aucune', 'Centris', 'ok']
+    ]},
+    { t: 'Risques', rows: [
+      ['Zone inondable', 'Hors des zones cartographiées', 'Cartographie provinciale', 'ok'],
+      ['Terrain contaminé', 'Aucune inscription', 'Répertoire des terrains contaminés', 'ok'],
+      ['Certificat de localisation', 'Non repéré dans les sources', 'À obtenir du vendeur', 'miss']
+    ]}
+  ];
+  var LABEL = { ok: 'Vérifié', warn: 'À vérifier', miss: 'Introuvable' };
+  var count = { ok: 0, warn: 0, miss: 0 };
+  var html = '';
+  REPORT.forEach(function (sec) {
+    html += '<div class="rep-sec"><h3>' + sec.t + '</h3><dl>';
+    sec.rows.forEach(function (r) {
+      count[r[3]]++;
+      html += '<div class="r"><dt>' + r[0] + '</dt><dd><span class="mono">' + r[1] + '</span><small>' + r[2] +
+              '</small></dd><span class="chip ' + r[3] + '">' + LABEL[r[3]] + '</span></div>';
+    });
+    html += '</dl></div>';
+  });
+  $('report').innerHTML = html;
+  $('tally').innerHTML =
+    '<div><b>' + count.ok + '</b><span class="chip ok">Vérifié</span></div>' +
+    '<div><b>' + count.warn + '</b><span class="chip warn">À vérifier</span></div>' +
+    '<div><b>' + count.miss + '</b><span class="chip miss">Introuvable</span></div>';
+
+  /* ---------- formulaires ---------- */
+  function setErr(id, msg) {
+    var input = $(id), p = $(id + '-err');
+    if (!p) return;
+    p.textContent = msg || '';
+    p.hidden = !msg;
+    if (msg) input.setAttribute('aria-invalid', 'true'); else input.removeAttribute('aria-invalid');
+  }
+  function check(rules) {
+    var first = null;
+    rules.forEach(function (r) {
+      var msg = r[1]($(r[0]));
+      setErr(r[0], msg);
+      if (msg && !first) first = $(r[0]);
+    });
+    if (first) first.focus();
+    return !first;
+  }
+  var isEmail = function (v) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim()); };
+
+  document.querySelectorAll('[data-toggle]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var i = $(b.getAttribute('data-toggle'));
+      var show = i.type === 'password';
+      i.type = show ? 'text' : 'password';
+      b.textContent = show ? 'Masquer' : 'Afficher';
+      b.setAttribute('aria-pressed', String(show));
+    });
+  });
+
+  function step(n) {
+    $('su-1').hidden = n !== 1;
+    $('su-2').hidden = n !== 2;
+    $('su-done').hidden = n !== 3;
+    $('su-progress').textContent = n === 3 ? 'Terminé' : 'Étape ' + n + ' de 2';
+    $('su-title').textContent = n === 1 ? 'Créer un compte courtier' : n === 2 ? 'Votre permis et votre agence' : 'Maquette validée';
+    $('su-sub').textContent = n === 1 ? 'Commencez avec votre courriel. Le reste prend une minute.'
+      : n === 2 ? 'Ces renseignements confirment que vous êtes courtier au Québec.' : '';
+    $('su-sub').hidden = n === 3;
+    $('su-title').setAttribute('tabindex', '-1');
+    if (n > 1) $('su-title').focus({ preventScroll: true });
+  }
+
+  $('su-1').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var ok = check([
+      ['su-email', function (i) { return isEmail(i.value) ? '' : 'Entrez un courriel valide, par exemple nom@agence.ca.'; }],
+      ['su-pw', function (i) { return i.value.length >= 12 ? '' : 'Il manque ' + (12 - i.value.length) + ' caractère(s) pour atteindre 12.'; }]
+    ]);
+    if (ok) step(2);
+  });
+  $('su-back').addEventListener('click', function () { step(1); });
+  $('su-2').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var ok = check([
+      ['su-first', function (i) { return i.value.trim() ? '' : 'Entrez votre prénom.'; }],
+      ['su-last', function (i) { return i.value.trim() ? '' : 'Entrez votre nom.'; }],
+      ['su-permis', function (i) { return /^[A-Za-z]\d{4}$/.test(i.value.trim()) ? '' : 'Le numéro compte une lettre et quatre chiffres, par exemple A1234.'; }],
+      ['su-agence', function (i) { return i.value ? '' : 'Choisissez votre agence dans la liste.'; }],
+      ['su-ok', function (i) { return i.checked ? '' : 'Cochez la case pour accepter les conditions.'; }]
+    ]);
+    if (ok) {
+      $('su-pw').value = '';
+      step(3);
+    }
+  });
+
+  $('si').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var ok = check([
+      ['si-email', function (i) { return isEmail(i.value) ? '' : 'Entrez le courriel de votre compte.'; }],
+      ['si-pw', function (i) { return i.value ? '' : 'Entrez votre mot de passe.'; }]
+    ]);
+    if (ok) {
+      $('si-pw').value = '';
+      $('si-note').textContent = 'Maquette : la connexion n\'est pas encore branchée. Rien n\'a été envoyé.';
+      $('si-note').hidden = false;
+    }
+  });
+  $('si-forgot').addEventListener('click', function () {
+    $('si-note').textContent = 'Maquette : ici, un lien de réinitialisation serait envoyé au courriel indiqué.';
+    $('si-note').hidden = false;
+  });
+
+  route();
+})();
+</script>
+
+</body>
+</html>
