@@ -13,3 +13,11 @@ Le secteur ou le territoire est utile pour distinguer les adresses identiques et
 Le prototype écoute en local. Pour mettre la recherche en ligne, héberger le service derrière un accès approprié et configurer le site pour appeler son API. Conserver les exports côté serveur. GitHub Pages héberge l’interface statique. Le CSV de couverture, fourni séparément, indique quels lots sont incomplets.
 
 Chaque résultat propose une demande de documents qui ouvre le logiciel de courriel du visiteur. Le message contient l’adresse et le numéro Centris. Le courtier vérifie les pièces disponibles et décide lesquelles transmettre au demandeur.
+
+Le lien « Demander les documents du vendeur » préremplit la demande. Après avoir choisi les PDF à remettre, tu peux préparer un fichier courriel local avec le script `preparer-envoi.py` :
+
+```sh
+python3 preparer-envoi.py 14472473 acheteur@example.com document-approuve.pdf --sortie envoi.eml
+```
+
+Ouvre le fichier dans ton logiciel de messagerie, vérifie le destinataire et les pièces puis envoie-le. Les fichiers PDF et les courriels préparés restent dans ton dossier privé.
